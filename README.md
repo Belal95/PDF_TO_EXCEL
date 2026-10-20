@@ -1,16 +1,33 @@
-# React + Vite
+# تقارير وكلاء البيع - PDF إلى Excel
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A browser-only tool for daily Arabic sales-agent reports. Select or drop one or more original PDF reports; the app processes them automatically and enables a single Excel download.
 
-Currently, two official plugins are available:
+## Output
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- One `data` worksheet with the existing nine Arabic columns and right-to-left layout.
+- Exactly four agent rows for each successfully extracted report date: فوري، خالص، ضامن، الاهلي.
+- If an agent is absent, all seven numeric columns for that agent are written as numeric zero. Existing values are preserved.
+- Dates come from the labelled **من تاريخ / إلى تاريخ** report interval, including PDFs where labels and values have slightly different baselines. The header creation date and PDF metadata are never used as a fallback.
+- Rows sort chronologically, then by the agent order above. Identical duplicates are skipped before missing agents are filled; conflicting duplicates produce an error.
 
-## React Compiler
+## Supported reports
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Use original text-based daily PDFs in the existing ENR layout. Images/scans, unreadable agent rows, missing report intervals, and multi-day aggregate reports produce explicit errors rather than fabricated zero rows or an assumed date. Continuation pages can inherit their report date from the preceding page.
 
-## Expanding the ESLint configuration
+If some PDFs fail, the download includes the successful files and the page clearly lists the failed files. Removing or adding a file rebuilds the download. There is no existing-workbook upload or append mode.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Files are processed locally in the browser with PDF.js and ExcelJS; no report data is uploaded to a backend. The interface uses an Arabic font from Google Fonts with local fallbacks.
+
+## Development
+
+```sh
+npm ci
+npm run dev
+npm test
+npm run lint
+npm run build
+```
+
+Deploy the Vite `dist` output on the existing Vercel project. The app has no server environment variables or API credentials.
+
+Regression tests cover report versus creation dates, Arabic numerals, label/value baseline differences, missing agents, duplicate handling, calendar sorting, malformed rows, continuation pages, and the serialized Excel workbook. Real downloaded reports are used only for local validation and are not committed to this repository.
